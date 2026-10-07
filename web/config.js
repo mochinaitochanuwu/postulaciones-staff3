@@ -1,5 +1,4 @@
-// API pública de Railway. Las claves y el token del bot van solo en Railway.
-// En localhost, la API y la web se sirven juntas con npm start.
+// API pública de Railway; las credenciales se configuran solo en Railway.
 window.STAFF_API_URL = ['localhost', '127.0.0.1'].includes(window.location.hostname)
   ? ''
-  : 'postulaciones-staff3.railway.internal';
+  : 'https://postulaciones-staff3-production.up.railway.app';

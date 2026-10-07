@@ -130,6 +130,19 @@ test('Producción rechaza credenciales incompletas y volúmenes ausentes',async(
   await assert.rejects(createApp({...config,production:true,webURL:'https://community.netlify.app',secret:'short'}),/APP_SECRET/);
   await assert.rejects(createApp({...config,production:true,webURL:'https://community.netlify.app',dbPath:'/data/staff.sqlite',volumeMount:''}),/volumen de Railway/);
 });
+test('La configuración detecta URL incompleta, dominio privado y retorno OAuth incorrecto',async()=>{
+  await assert.rejects(createApp({...config,webURL:'uie-staff-forms-main.netlify.app'}),/PUBLIC_WEB_URL debe incluir/);
+  await assert.rejects(createApp({...config,webURL:'https://servicio.railway.internal'}),/PUBLIC_WEB_URL necesita un dominio público/);
+  await assert.rejects(createApp({...config,discordRedirect:'postulaciones-staff3-production.up.railway.app/api/auth/discord/callback'}),/DISCORD_REDIRECT_URI debe incluir/);
+  await assert.rejects(createApp({...config,discordRedirect:'https://postulaciones-staff3.railway.internal/api/auth/discord/callback'}),/dominio público de la API/);
+  await assert.rejects(createApp({...config,discordRedirect:'https://api.up.railway.app/'}),/seguida de/);
+  await assert.rejects(createApp({...config,discordRedirect:'http://api.up.railway.app/api/auth/discord/callback'}),/HTTP solo se permite para localhost/);
+  await assert.rejects(createApp({...config,discordRedirect:'https://api.up.railway.app/api/auth/discord/callback?x=1'}),/sin parámetros/);
+  await assert.rejects(createApp({...config,production:true,webURL:'https://localhost:3000',discordRedirect:'https://localhost:3000/api/auth/discord/callback'}),error=>{
+    assert.ok(error.message.includes('dominio público de Netlify'));assert.ok(error.message.includes('HTTPS pública de la API'));return true;
+  });
+  const app=await createApp({...config,webURL:'https://uie-staff-forms-main.netlify.app',discordRedirect:'https://postulaciones-staff3-production.up.railway.app/api/auth/discord/callback'});app.db.close();
+});
 test('La cuenta conserva una sola postulación incluso si vence',async t=>{
   const h=await harness(t,{userEmail:'expired@example.com'}),body={name:'Vencida',email:'expired@example.com',consent:true,requestId:randomUUID(),answers:validAnswers(1)};
   const first=await h.request('/api/applications','POST',body);assert.equal(first.status,201);

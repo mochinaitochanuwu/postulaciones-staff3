@@ -39,20 +39,29 @@ export function envConfig() {
 }
 export async function createApp(config, fetcher=fetch) {
   const c={...config};
-  const webURL=new URL(c.webURL);
+  const privateHost=url=>url.hostname==='railway.internal'||url.hostname.endsWith('.railway.internal');
+  const localHost=url=>['localhost','127.0.0.1','[::1]'].includes(url.hostname);
+  let webURL,callback;
+  try{webURL=new URL(c.webURL);}catch{throw new Error('PUBLIC_WEB_URL debe incluir http:// o https:// y el dominio de la web.');}
+  if(!['http:','https:'].includes(webURL.protocol)||webURL.username||webURL.password||webURL.search||webURL.hash) throw new Error('PUBLIC_WEB_URL debe ser la dirección HTTP o HTTPS de la web, sin credenciales, parámetros ni fragmentos.');
+  if(privateHost(webURL)) throw new Error('PUBLIC_WEB_URL necesita un dominio público; .railway.internal no es accesible desde el navegador.');
+  if(c.discordRedirect) {
+    try{callback=new URL(c.discordRedirect);}catch{throw new Error('DISCORD_REDIRECT_URI debe incluir http:// o https:// y terminar en /api/auth/discord/callback.');}
+    if(privateHost(callback)) throw new Error('DISCORD_REDIRECT_URI necesita el dominio público de la API, no .railway.internal.');
+    if(!['http:','https:'].includes(callback.protocol)||callback.pathname!=='/api/auth/discord/callback'||callback.search||callback.hash||callback.username||callback.password) throw new Error('DISCORD_REDIRECT_URI debe ser la URL de la API seguida de /api/auth/discord/callback, sin parámetros ni fragmentos.');
+    if(callback.protocol==='http:'&&!localHost(callback)) throw new Error('DISCORD_REDIRECT_URI debe usar HTTPS; HTTP solo se permite para localhost.');
+  }
   if(c.production) {
     const errors=[];
     if(webURL.protocol!=='https:') errors.push('PUBLIC_WEB_URL debe usar HTTPS.');
+    if(localHost(webURL)) errors.push('PUBLIC_WEB_URL debe usar el dominio público de Netlify en producción.');
     if(!c.secret || c.secret.length<48 || c.secret.includes('REEMPLAZAR')) errors.push('Configura APP_SECRET aleatorio de al menos 48 caracteres.');
     if(!c.botToken) errors.push('Configura DISCORD_BOT_TOKEN con el token del bot.');
     if(!c.webhook) errors.push('Configura DISCORD_WEBHOOK_URL.');
     if(!c.dbPath.startsWith('/data/')) errors.push('Producción requiere DB_PATH=/data/staff.sqlite y un volumen en /data.');
     if(c.volumeMount!=='/data') errors.push('Monta un volumen de Railway en /data antes de iniciar la API.');
     if(!c.discordClientId || !c.discordClientSecret || !c.discordRedirect) errors.push('Configura DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET y DISCORD_REDIRECT_URI.');
-    if(c.discordRedirect) {
-      let callback;try{callback=new URL(c.discordRedirect);}catch{}
-      if(!callback || callback.protocol!=='https:' || callback.pathname!=='/api/auth/discord/callback' || callback.search || callback.hash) errors.push('DISCORD_REDIRECT_URI debe ser la URL HTTPS de la API seguida de /api/auth/discord/callback.');
-    }
+    if(callback && (callback.protocol!=='https:'||localHost(callback))) errors.push('DISCORD_REDIRECT_URI debe ser la URL HTTPS pública de la API seguida de /api/auth/discord/callback.');
     if(!/^[0-9]{17,20}$/.test(c.adminDiscordId||'')) errors.push('Configura ADMIN_DISCORD_ID con el ID de tu cuenta personal de Discord.');
     if(errors.length) throw new Error(errors.join('\n'));
   }

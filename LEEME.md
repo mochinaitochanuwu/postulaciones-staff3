@@ -1,6 +1,22 @@
 # Postulaciones de Staff — Netlify + Railway
 
-Versión 2.1 — Proyecto completo en español. La web usa HTML, CSS y JavaScript sin compilación. La API usa Node.js 24 y SQLite, sin paquetes externos. Este ZIP actualiza el código; no modifica tus despliegues hasta que lo subas a GitHub y lo publiques en Netlify y Railway.
+Versión 2.1.2 — Proyecto completo en español. La web usa HTML, CSS y JavaScript sin compilación. La API usa Node.js 24 y SQLite, sin paquetes externos. Este ZIP actualiza el código; no modifica tus despliegues hasta que lo subas a GitHub y lo publiques en Netlify y Railway.
+
+## Actualización de tu proyecto existente
+
+Este paquete corrige el ZIP que enviaste y conserva el formulario, las tres etapas, el panel, los permisos y los avisos por MD. Las claves y tus datos se conservan en `respaldo-privado-no-subir`, junto a esta carpeta. Sube a GitHub únicamente el contenido de `postulaciones-staff3-main` y sigue `EMPIEZA-AQUI.md`, situado junto a esta carpeta.
+
+Direcciones ya configuradas:
+
+- Web: `https://uie-staff-forms-main.netlify.app`.
+- API: `https://postulaciones-staff3-production.up.railway.app`.
+- Retorno OAuth: `https://postulaciones-staff3-production.up.railway.app/api/auth/discord/callback`.
+
+En Railway pega las variables de `respaldo-privado-no-subir/variables-railway.env` en el RAW Editor. Las direcciones, el modo de producción, el proxy y la ruta de datos ya están corregidos. El archivo conserva las credenciales que estaban en tu ZIP; si cambiaste una credencial después, conserva el valor más reciente de Railway. El volumen debe estar conectado a este servicio y montado en `/data`. Railway añade `RAILWAY_VOLUME_MOUNT_PATH` automáticamente; no lo inventes como una variable para simular un volumen.
+
+La API ahora rechaza una dirección privada o incompleta también al probar en modo desarrollo, con un mensaje concreto que indica qué variable corregir. Un retorno HTTP se admite solo para pruebas en localhost. Esto evita que una URL sin `https://` pase inadvertida y falle al iniciar sesión.
+
+El `.env.example` incluido sirve para pruebas locales y contiene campos vacíos. No importes sus campos vacíos sobre las claves reales del servicio.
 
 ## Qué incluye
 
@@ -226,7 +242,7 @@ Abre `web/config.js` y coloca **solo la URL pública de la API**:
 window.STAFF_API_URL = 'https://tu-api.up.railway.app';
 ```
 
-Vuelve a publicar la carpeta `web` en Netlify, o sube el cambio a Git si usas despliegue automático. El token del bot, el Client Secret y la URL del webhook van únicamente en Railway. Este ZIP ya apunta a `https://postulaciones-staff-production.up.railway.app` y usa la API local automáticamente al abrirlo en localhost.
+Vuelve a publicar la carpeta `web` en Netlify, o sube el cambio a Git si usas despliegue automático. El token del bot, el Client Secret y la URL del webhook van únicamente en Railway. Este ZIP ya apunta a `https://postulaciones-staff3-production.up.railway.app` y usa la API local automáticamente al abrirlo en localhost.
 
 Si añades un dominio propio a la API, cambia también `connect-src` en `web/_headers` y `netlify.toml`: sustituye `https://*.up.railway.app` por el dominio HTTPS exacto de tu API. Si cambias el dominio de la web, actualiza `PUBLIC_WEB_URL` y revisa la conexión de `web/config.js`.
 
@@ -272,7 +288,7 @@ Los enlaces del MD contienen la referencia del expediente y requieren iniciar se
 1. Conserva tu `.env`, tu base de datos y el volumen de Railway. No borres `data/` ni `/data`.
 2. Sustituye el código por esta versión. La API añade automáticamente las tablas y columnas necesarias sin borrar cuentas de Staff ni respuestas.
 3. Añade `DISCORD_BOT_TOKEN` en Railway e invita el bot a tu servidor. Conserva `ADMIN_DISCORD_ID`, las tres variables OAuth, `APP_SECRET`, `DB_PATH` y `DISCORD_WEBHOOK_URL`. `RESEND_API_KEY` y `MAIL_FROM` ya no se utilizan y puedes eliminarlas. No necesitas esperar la verificación DNS de Resend. Si vienes de una versión con contraseñas, configura también el ID personal y OAuth; `ADMIN_EMAIL` y `ADMIN_PASSWORD` no se usan para entrar.
-4. Revisa `web/config.js`: esta versión ya apunta a tu API `https://postulaciones-staff-production.up.railway.app`. Configura `PUBLIC_WEB_URL` en Railway con la dirección exacta del sitio de Netlify que vas a utilizar, especialmente si creaste uno nuevo.
+4. Revisa `web/config.js`: esta versión ya apunta a tu API `https://postulaciones-staff3-production.up.railway.app`. Configura `PUBLIC_WEB_URL` en Railway con la dirección exacta del sitio de Netlify que vas a utilizar, especialmente si creaste uno nuevo.
 5. Sube el código actualizado a GitHub y despliega la API en Railway y `web` en Netlify. Aplica también los cambios pendientes de variables. Abre `/health` y comprueba un MD de recepción y uno de aprobación con tu propia cuenta.
 
 Los avisos de correo pendientes se convierten automáticamente en MD; los correos ya entregados se conservan como historial. No se envía por correo ningún aviso nuevo. Los expedientes anteriores sin una cuenta de Discord vinculada no reciben MD hasta que su dueño complete la vinculación: no se usa el ID que alguien escribió sin verificar en un formulario.
@@ -283,6 +299,6 @@ Los expedientes antiguos siguen visibles para el Staff autorizado. Un postulante
 
 ## Validación realizada
 
-Pasaron 23 pruebas de integración: etapas, permisos por Discord, revocación inmediata, cierre de accesos antiguos, concurrencia, rechazo, sesiones, persistencia, privacidad, OAuth, bloqueo de duplicados, propiedad del expediente, imágenes y vinculación de cuentas y expedientes antiguos. También se comprobó la interacción del DOM: acceso, botón de inicio, edición del perfil, todas las preguntas de la primera etapa, aprobación, continuación, botón del panel según permisos, bloqueo del panel sin autorización, gestión del equipo y privacidad.
+Pasaron 24 pruebas de integración: etapas, permisos por Discord, revocación inmediata, cierre de accesos antiguos, concurrencia, rechazo, sesiones, persistencia, privacidad, OAuth, bloqueo de duplicados, propiedad del expediente, imágenes y vinculación de cuentas y expedientes antiguos. También se comprobó la interacción del DOM: acceso, botón de inicio, edición del perfil, todas las preguntas de la primera etapa, aprobación, continuación, botón del panel según permisos, bloqueo del panel sin autorización, gestión del equipo y privacidad.
 
 Discord OAuth, la creación de MD, el envío del bot y el webhook se simularon en las pruebas. También se verifican MD bloqueados, límites de envío, motivos largos, migración de la cola anterior y destinatarios verificados. Configura tus credenciales y comprueba el acceso y envío real después del despliegue. No se pudo ejecutar una revisión visual en navegador en el entorno de creación; revisa la apariencia en computadora y celular.
