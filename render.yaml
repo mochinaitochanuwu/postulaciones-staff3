@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: uie-staff-api
+    runtime: docker
+    plan: free
+    region: virginia
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "10000"
+      - key: PUBLIC_WEB_URL
+        value: https://uie-staff-forms-main.netlify.app
+      - key: DATABASE_MODE
+        value: postgres
+      - key: DATABASE_URL
+        sync: false
+      - key: TRUST_PROXY
+        value: "true"
+      - key: APP_SECRET
+        sync: false
+      - key: ADMIN_DISCORD_ID
+        sync: false
+      - key: ADMIN_NAME
+        sync: false
+      - key: DISCORD_BOT_TOKEN
+        sync: false
+      - key: DISCORD_WEBHOOK_URL
+        sync: false
+      - key: DISCORD_CLIENT_ID
+        sync: false
+      - key: DISCORD_CLIENT_SECRET
+        sync: false
