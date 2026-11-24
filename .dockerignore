@@ -1,8 +1,6 @@
 .env
-.env.*
 data
-*.sqlite*
 node_modules
-.netlify
 tests
-respaldo-privado-no-subir
+screenshots
+.git
